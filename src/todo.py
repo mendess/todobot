@@ -68,10 +68,7 @@ class Todos(commands.Cog):
         try:
             # Start transaction
             tdl = deepcopy(self.todo_lists[ctx.author.id])
-            if len(tdl.todo.keys()) == 0:
-                m = 0
-            else:
-                m = max(tdl.todo.keys()) + 1
+            m = max([-1] + list(tdl.todo.keys()) + list(tdl.done.keys())) + 1
             tdl.todo[m] = ' '.join(text)
             await edit_message(ctx, tdl.todo_id,
                                make_todo_list_msg('TODO', tdl.todo))
