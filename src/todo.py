@@ -4,7 +4,6 @@ import pickle
 
 
 TEXT_CHANNEL_CAT_ID = 769885792038289446
-TEXT_CHANNEL_CAT_ID = 774423497274687541
 
 class TodoList:
     @staticmethod
