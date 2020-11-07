@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import pickle
+from copy import deepcopy
 
 
 TEXT_CHANNEL_CAT_ID = 769885792038289446
@@ -39,40 +40,52 @@ class Todos(commands.Cog):
 
     @commands.command(pass_context=True)
     async def done(self, ctx, number: int):
-        tdl = self.todo_lists[ctx.author.id]
-        tdl.done[number] = tdl.todo[number]
-        del tdl.todo[number]
-        await edit_message(ctx, tdl.done_id, 'DONE', tdl.done)
-        await edit_message(ctx, tdl.todo_id, 'TODO', tdl.todo)
-        self.save_todo_list()
-        await ctx.message.delete()
+        try:
+            tdl = deepcopy(self.todo_lists[ctx.author.id])
+            tdl.done[number] = tdl.todo[number]
+            del tdl.todo[number]
+            await edit_message(ctx, tdl.done_id, 'DONE', tdl.done)
+            await edit_message(ctx, tdl.todo_id, 'TODO', tdl.todo)
+            self.todo_lists[ctx.author.id] = tdl
+            self.save_todo_list()
+            await ctx.message.delete()
+        except Exception as e:
+            await ctx.channel.send(f'Failed to move todo to done: {e}')
 
 
     @commands.command(pass_context=True)
     async def add(self, ctx, *text):
-        tdl = self.todo_lists[ctx.author.id]
-        if len(tdl.todo.keys()) == 0:
-            m = 0
-        else:
-            m = max(tdl.todo.keys()) + 1
-        tdl.todo[m] = ' '.join(text)
-        await edit_message(ctx, tdl.todo_id, 'TODO', tdl.todo)
-        self.save_todo_list()
-        await ctx.message.delete()
+        try:
+            tdl = deepcopy(self.todo_lists[ctx.author.id])
+            if len(tdl.todo.keys()) == 0:
+                m = 0
+            else:
+                m = max(tdl.todo.keys()) + 1
+            tdl.todo[m] = ' '.join(text)
+            await edit_message(ctx, tdl.todo_id, 'TODO', tdl.todo)
+            self.todo_lists[ctx.author.id] = tdl
+            self.save_todo_list()
+            await ctx.message.delete()
+        except Exception as e:
+            await ctx.channel.send(f'Failed to add new todo: {e}')
 
 
     @commands.command(pass_context=True)
     async def edit(self, ctx, number: int, *text):
-        tdl = self.todo_lists[ctx.author.id]
-        if number in tdl.todo:
-            tdl.todo[number] = ' '.join(text)
-            await edit_message(ctx, tdl.todo_id, 'TODO', tdl.todo)
-        elif number in tdl.done:
-            tdl.done[number] = ' '.join(text)
-            await edit_message(ctx, tdl.done_id, 'DONE', tdl.done)
-        else:
-            await ctx.channel.send('No such todo item')
-        await ctx.message.delete()
+        try:
+            tdl = deepcopy(self.todo_lists[ctx.author.id])
+            if number in tdl.todo:
+                tdl.todo[number] = ' '.join(text)
+                await edit_message(ctx, tdl.todo_id, 'TODO', tdl.todo)
+            elif number in tdl.done:
+                tdl.done[number] = ' '.join(text)
+                await edit_message(ctx, tdl.done_id, 'DONE', tdl.done)
+            else:
+                await ctx.channel.send('No such todo item')
+            self.todo_lists[ctx.author.id] = tdl
+            await ctx.message.delete()
+        except Exception as e:
+            await ctx.channel.send(f'Failed to edit todo: {e}')
 
 
     @commands.command(pass_context=True)
