@@ -37,9 +37,6 @@ class Todos(commands.Cog):
             self.todo_lists = {}
 
     async def cog_after_invoke(self, ctx):
-        for k in self.todo_lists.keys():
-            print('saving list with error id?',
-                  hasattr(self.todo_lists[k], 'error_id'))
         with open('files/todo_lists.pik', 'wb') as f:
             pickle.dump(self.todo_lists, f)
 
